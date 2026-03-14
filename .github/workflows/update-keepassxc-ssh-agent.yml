@@ -42,10 +42,13 @@ jobs:
           echo "ERROR: Timed out waiting for PyPI availability"
           exit 1
 
+      - name: Install script dependencies
+        run: pip install jinja2 packaging
+
       - name: Resolve dependencies and update formula
         env:
           VERSION: ${{ github.event.client_payload.version || inputs.version }}
-        run: python3 scripts/update_formula.py "$VERSION"
+        run: python3 scripts/keepassxc-ssh-agent/update_formula.py "$VERSION"
 
       - name: Commit and push
         env:
