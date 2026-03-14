@@ -1,0 +1,188 @@
+name: Update Formula
+
+on:
+  repository_dispatch:
+    types: [update-formula]
+
+jobs:
+  update-formula:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Wait for PyPI availability
+        env:
+          VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          echo "Waiting for keepassxc-ssh-agent ${VERSION} on PyPI..."
+          for i in $(seq 1 30); do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+              "https://pypi.org/pypi/keepassxc-ssh-agent/${VERSION}/json")
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "Package available on PyPI"
+              exit 0
+            fi
+            echo "Attempt $i: not yet available (HTTP $HTTP_CODE), waiting 30s..."
+            sleep 30
+          done
+          echo "ERROR: Timed out waiting for PyPI availability"
+          exit 1
+
+      - name: Resolve dependencies and update formula
+        env:
+          VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          python3 << 'PYEOF'
+          import json
+          import hashlib
+          import os
+          import subprocess
+          import sys
+          import tempfile
+          import urllib.request
+
+          VERSION = os.environ["VERSION"]
+          FORMULA_PATH = "Formula/keepassxc-ssh-agent.rb"
+
+          def get_pypi_info(package, version=None):
+              """Fetch package info from PyPI JSON API."""
+              if version:
+                  url = f"https://pypi.org/pypi/{package}/{version}/json"
+              else:
+                  url = f"https://pypi.org/pypi/{package}/json"
+              with urllib.request.urlopen(url) as resp:
+                  return json.load(resp)
+
+          def get_sdist_url_and_hash(package, version):
+              """Get sdist URL and sha256 for a specific package version."""
+              data = get_pypi_info(package, version)
+              for file_info in data["urls"]:
+                  if file_info["packagetype"] == "sdist":
+                      url = file_info["url"]
+                      # Download and compute sha256
+                      with urllib.request.urlopen(url) as resp:
+                          content = resp.read()
+                      sha256 = hashlib.sha256(content).hexdigest()
+                      return url, sha256
+              raise RuntimeError(f"No sdist found for {package}=={version}")
+
+          # Install package in a temporary virtualenv and resolve dependencies
+          with tempfile.TemporaryDirectory() as tmpdir:
+              venv_dir = os.path.join(tmpdir, "venv")
+              subprocess.check_call([sys.executable, "-m", "venv", venv_dir])
+              pip = os.path.join(venv_dir, "bin", "pip")
+
+              subprocess.check_call([pip, "install", f"keepassxc-ssh-agent=={VERSION}"],
+                                    stdout=subprocess.DEVNULL)
+              result = subprocess.check_output([pip, "freeze"], text=True)
+
+          # Parse frozen dependencies (exclude the main package)
+          dependencies = {}
+          for line in result.strip().splitlines():
+              if "==" in line:
+                  pkg, ver = line.split("==", 1)
+                  pkg_lower = pkg.lower().replace("-", "_")
+                  if pkg_lower != "keepassxc_ssh_agent":
+                      dependencies[pkg] = ver
+
+          print(f"Resolved dependencies: {dependencies}")
+
+          # Get main package sdist info
+          main_url, main_sha = get_sdist_url_and_hash("keepassxc-ssh-agent", VERSION)
+          print(f"Main package: {main_url}")
+
+          # Get dependency sdist info
+          dep_resources = []
+          for pkg, ver in sorted(dependencies.items()):
+              url, sha = get_sdist_url_and_hash(pkg, ver)
+              # Use lowercase name for resource block (Homebrew convention)
+              dep_resources.append((pkg.lower(), url, sha))
+              print(f"  {pkg}=={ver}: {url}")
+
+          # Generate resource blocks
+          resource_blocks = ""
+          for name, url, sha in dep_resources:
+              resource_blocks += f'''
+            resource "{name}" do
+              url "{url}"
+              sha256 "{sha}"
+            end
+          '''
+
+          # Generate the complete formula
+          formula = f'''class KeepassxcSshAgent < Formula
+            include Language::Python::Virtualenv
+
+            desc "SSH IdentityAgent proxy that triggers KeePassXC database unlock via TouchID"
+            homepage "https://github.com/mietzen/keepassxc-ssh-agent"
+            url "{main_url}"
+            sha256 "{main_sha}"
+            license "MIT"
+
+            depends_on "libsodium"
+            depends_on :macos
+            depends_on "python@3.13"
+          {resource_blocks}
+            def install
+              ENV["SODIUM_INSTALL"] = "system"
+              virtualenv_install_with_resources
+            end
+
+            def post_uninstall
+              opoo "To remove configuration files, run: rm -rf ~/.keepassxc"
+            end
+
+            def caveats
+              <<~EOS
+                To associate with KeePassXC (browser integration must be enabled):
+
+                  keepassxc-ssh-agent install --register-only
+
+                Then start the background service:
+
+                  brew services start keepassxc-ssh-agent
+              EOS
+            end
+
+            service do
+              run [opt_bin/"keepassxc-ssh-agent", "run"]
+              keep_alive true
+              log_path var/"log/keepassxc-ssh-agent/out.log"
+              error_log_path var/"log/keepassxc-ssh-agent/err.log"
+            end
+
+            test do
+              assert_match "keepassxc-ssh-agent", shell_output("#{{bin}}/keepassxc-ssh-agent --help")
+              assert_match "status", shell_output("#{{bin}}/keepassxc-ssh-agent --help")
+            end
+          end
+          '''
+
+          # Dedent the formula (remove common leading whitespace)
+          import textwrap
+          formula = textwrap.dedent(formula).strip() + "\n"
+
+          with open(FORMULA_PATH, "w") as f:
+              f.write(formula)
+
+          print(f"Formula updated to version {VERSION}")
+          PYEOF
+
+      - name: Commit and push
+        env:
+          VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/keepassxc-ssh-agent.rb
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "keepassxc-ssh-agent ${VERSION}"
+          git push
