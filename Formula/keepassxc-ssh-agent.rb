@@ -3,27 +3,27 @@ class KeepassxcSshAgent < Formula
 
   desc "SSH IdentityAgent proxy that triggers KeePassXC database unlock via TouchID"
   homepage "https://github.com/mietzen/keepassxc-ssh-agent"
-  url "https://files.pythonhosted.org/packages/placeholder/keepassxc_ssh_agent-0.0.0.tar.gz"
-  sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+  url "https://files.pythonhosted.org/packages/ce/01/66c6438859d43dd4127c373b1cd5dd522c3a696046ebf4e14a6b55c11ad1/keepassxc_ssh_agent-0.8.0.tar.gz"
+  sha256 "8e07a3a62e7e5b833de8539c6ec0d973be35c061e147a682ed1d5731fcaaae8b"
   license "MIT"
 
   depends_on "libsodium"
   depends_on :macos
   depends_on "python@3.13"
 
+  resource "pynacl" do
+    url "https://files.pythonhosted.org/packages/d9/9a/4019b524b03a13438637b11538c82781a5eda427394380381af8f04f467a/pynacl-1.6.2.tar.gz"
+    sha256 "018494d6d696ae03c7e656e5e74cdfd8ea1326962cc401bcf018f1ed8436811c"
+  end
+
   resource "cffi" do
-    url "https://files.pythonhosted.org/packages/placeholder/cffi-0.0.0.tar.gz"
-    sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+    url "https://files.pythonhosted.org/packages/eb/56/b1ba7935a17738ae8453301356628e8147c79dbb825bcbc73dc7401f9846/cffi-2.0.0.tar.gz"
+    sha256 "44d1b5909021139fe36001ae048dbdde8214afa20200eda0f64c068cac5d5529"
   end
 
   resource "pycparser" do
-    url "https://files.pythonhosted.org/packages/placeholder/pycparser-0.0.0.tar.gz"
-    sha256 "0000000000000000000000000000000000000000000000000000000000000000"
-  end
-
-  resource "pynacl" do
-    url "https://files.pythonhosted.org/packages/placeholder/pynacl-0.0.0.tar.gz"
-    sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+    url "https://files.pythonhosted.org/packages/1b/7d/92392ff7815c21062bea51aa7b87d45576f649f16458d78b7cf94b9ab2e6/pycparser-3.0.tar.gz"
+    sha256 "600f49d217304a5902ac3c37e1281c9fe94e4d0489de643a9504c5cdfdfc6b29"
   end
 
   def install
