@@ -3,8 +3,8 @@ class KeepassxcSshAgent < Formula
 
   desc "SSH IdentityAgent proxy that triggers KeePassXC database unlock via TouchID"
   homepage "https://github.com/mietzen/keepassxc-ssh-agent"
-  url "https://files.pythonhosted.org/packages/7d/09/a9dbb7db359f29df30281dadcb8f0e9b559cb93ef5d7a2b3cacd37227a80/keepassxc_ssh_agent-0.9.0.tar.gz"
-  sha256 "0bc5d2f38cfb6dfa48499a96c7d21e7984103d741ea031fe76ff839db4f26fd8"
+  url "https://files.pythonhosted.org/packages/ef/c6/f87a3b9cff6e104345d2296daa7eb20f1cb59a14ce2fe9d9bcc9e6c30a66/keepassxc_ssh_agent-1.0.0.tar.gz"
+  sha256 "d63fb2145128e163df572822221112bae90c18ed0b7a0e2a59dcdf77cb39b808"
   license "MIT"
 
   depends_on "libsodium"
