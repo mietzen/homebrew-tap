@@ -1,0 +1,62 @@
+name: Update keepassxc-cli
+
+on:
+  repository_dispatch:
+    types: [update-keepassxc-cli]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Package version to update to (e.g. 0.1.0)"
+        required: true
+        type: string
+
+jobs:
+  update-formula:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Wait for PyPI availability
+        env:
+          VERSION: ${{ github.event.client_payload.version || inputs.version }}
+        run: |
+          echo "Waiting for keepassxc-cli ${VERSION} on PyPI..."
+          for i in $(seq 1 30); do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+              "https://pypi.org/pypi/keepassxc-cli/${VERSION}/json")
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "Package available on PyPI"
+              exit 0
+            fi
+            echo "Attempt $i: not yet available (HTTP $HTTP_CODE), waiting 30s..."
+            sleep 30
+          done
+          echo "ERROR: Timed out waiting for PyPI availability"
+          exit 1
+
+      - name: Install script dependencies
+        run: pip install jinja2 packaging
+
+      - name: Resolve dependencies and update formula
+        env:
+          VERSION: ${{ github.event.client_payload.version || inputs.version }}
+        run: python3 scripts/keepassxc-cli/update_formula.py "$VERSION"
+
+      - name: Commit and push
+        env:
+          VERSION: ${{ github.event.client_payload.version || inputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/keepassxc-cli.rb
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "keepassxc-cli ${VERSION}"
+          git push

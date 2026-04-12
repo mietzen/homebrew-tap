@@ -1,0 +1,45 @@
+class KeepassxcCli < Formula
+  include Language::Python::Virtualenv
+
+  desc "CLI for KeePassXC using the browser extension protocol with biometric unlock"
+  homepage "https://github.com/mietzen/keepassxc-cli"
+  url "{{ url }}"
+  sha256 "{{ sha256 }}"
+  license "MIT"
+
+  depends_on "libsodium"
+  depends_on "python@3.13"
+{% for resource in resources %}
+
+  resource "{{ resource.name }}" do
+    url "{{ resource.url }}"
+    sha256 "{{ resource.sha256 }}"
+  end
+{% endfor %}
+
+  def install
+    ENV["SODIUM_INSTALL"] = "system"
+    virtualenv_install_with_resources
+  end
+
+  def post_uninstall
+    opoo "To remove configuration files, run: rm -rf ~/.keepassxc"
+  end
+
+  def caveats
+    <<~EOS
+      To associate with KeePassXC (browser integration must be enabled):
+
+        keepassxc-cli setup
+
+      Usage:
+
+        keepassxc-cli --help
+    EOS
+  end
+
+  test do
+    assert_match "keepassxc-cli", shell_output("#{bin}/keepassxc-cli --help")
+    assert_match "show", shell_output("#{bin}/keepassxc-cli --help")
+  end
+end
