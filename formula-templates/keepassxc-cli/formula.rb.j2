@@ -7,8 +7,8 @@ class KeepassxcCli < Formula
   sha256 "{{ sha256 }}"
   license "MIT"
 
-  depends_on :macos
   depends_on "libsodium"
+  depends_on :macos
   depends_on "python@3.13"
 {% for resource in resources %}
 
