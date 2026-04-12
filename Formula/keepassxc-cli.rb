@@ -7,6 +7,7 @@ class KeepassxcCli < Formula
   sha256 "373f8ccd183cc1a9f820b0e789506e30afbbbfb2ae1764d00d38ad91d35a51cb"
   license "MIT"
 
+  depends_on :macos
   depends_on "libsodium"
   depends_on "python@3.13"
 
