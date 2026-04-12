@@ -3,8 +3,8 @@ class KeepassxcSshAgent < Formula
 
   desc "SSH IdentityAgent proxy that triggers KeePassXC database unlock via TouchID"
   homepage "https://github.com/mietzen/keepassxc-ssh-agent"
-  url "https://files.pythonhosted.org/packages/be/a2/0e4994bfe9dbf092808c5cc9f6c3fee638b11577084428487ce1fdc1d15d/keepassxc_ssh_agent-1.1.0.tar.gz"
-  sha256 "df0c48a256cac11a1dfc15dc0b7a3f3d515972a0e189a148d3c9214df521c3c3"
+  url "https://files.pythonhosted.org/packages/b2/62/22579364d06012f48f3b32f854b3318f79fe602436dc69276699faff1291/keepassxc_ssh_agent-1.1.1.tar.gz"
+  sha256 "a91ff1f61fb05a7a29e7d9712dfd410017837804e67d3551876ea569b6ef43a1"
   license "MIT"
 
   depends_on "libsodium"
@@ -17,8 +17,8 @@ class KeepassxcSshAgent < Formula
   end
 
   resource "keepassxc-browser-api" do
-    url "https://files.pythonhosted.org/packages/ae/17/b1e5603295bf4a31c32d1d0f184b358aa13bf5cf9edcf201ba54533a0581/keepassxc_browser_api-0.1.0.tar.gz"
-    sha256 "da9f2e8678fe32c9bb6dd4a1786df5852772845d4a2672a4bc16e28e5b857b5f"
+    url "https://files.pythonhosted.org/packages/68/e2/f33b379e9759600d13114792c6945d1b204eb48deb9f6dc9d6d90aa05793/keepassxc_browser_api-0.1.1.tar.gz"
+    sha256 "05df7a5a300b4c66a1dbac3a4953b467458c30406744f4f82ea0a331518bf6c0"
   end
 
   resource "pycparser" do
