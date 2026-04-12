@@ -1,12 +1,12 @@
-name: Update keepassxc-ssh-agent
+name: Update keepassxc-cli
 
 on:
   repository_dispatch:
-    types: [update-keepassxc-ssh-agent]
+    types: [update-keepassxc-cli]
   workflow_dispatch:
     inputs:
       version:
-        description: "Package version to update to (e.g. 0.8.0)"
+        description: "Package version to update to (e.g. 0.1.0)"
         required: true
         type: string
 
@@ -28,10 +28,10 @@ jobs:
         env:
           VERSION: ${{ github.event.client_payload.version || inputs.version }}
         run: |
-          echo "Waiting for keepassxc-ssh-agent ${VERSION} on PyPI..."
+          echo "Waiting for keepassxc-cli ${VERSION} on PyPI..."
           for i in $(seq 1 30); do
             HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-              "https://pypi.org/pypi/keepassxc-ssh-agent/${VERSION}/json")
+              "https://pypi.org/pypi/keepassxc-cli/${VERSION}/json")
             if [ "$HTTP_CODE" = "200" ]; then
               echo "Package available on PyPI"
               exit 0
@@ -48,7 +48,7 @@ jobs:
       - name: Resolve dependencies and update formula
         env:
           VERSION: ${{ github.event.client_payload.version || inputs.version }}
-        run: python3 scripts/update_formula.py keepassxc-ssh-agent "$VERSION"
+        run: python3 scripts/update_formula.py keepassxc-cli "$VERSION"
 
       - name: Commit and push
         env:
@@ -56,7 +56,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Formula/keepassxc-ssh-agent.rb
+          git add Formula/keepassxc-cli.rb
           git diff --cached --quiet && echo "No changes to commit" && exit 0
-          git commit -m "keepassxc-ssh-agent ${VERSION}"
+          git commit -m "keepassxc-cli ${VERSION}"
           git push
