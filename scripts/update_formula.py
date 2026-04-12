@@ -102,7 +102,7 @@ def resolve_dependencies(
         if req.marker and not req.marker.evaluate({"extra": ""}):
             continue
 
-        normalized = req.name.lower().replace("-", "_")
+        normalized = req.name.lower()
 
         # Skip already resolved (handles circular deps)
         if normalized in resolved:
@@ -151,6 +151,8 @@ def main() -> None:
     env = Environment(
         loader=FileSystemLoader(template_dir),
         keep_trailing_newline=True,
+        trim_blocks=True,
+        lstrip_blocks=True,
     )
     template = env.get_template("formula.rb.j2")
     formula = template.render(

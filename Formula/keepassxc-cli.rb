@@ -1,14 +1,13 @@
-class KeepassxcSshAgent < Formula
+class KeepassxcCli < Formula
   include Language::Python::Virtualenv
 
-  desc "SSH IdentityAgent proxy that triggers KeePassXC database unlock via TouchID"
-  homepage "https://github.com/mietzen/keepassxc-ssh-agent"
-  url "https://files.pythonhosted.org/packages/be/a2/0e4994bfe9dbf092808c5cc9f6c3fee638b11577084428487ce1fdc1d15d/keepassxc_ssh_agent-1.1.0.tar.gz"
-  sha256 "df0c48a256cac11a1dfc15dc0b7a3f3d515972a0e189a148d3c9214df521c3c3"
+  desc "CLI for KeePassXC using the browser extension protocol with biometric unlock"
+  homepage "https://github.com/mietzen/keepassxc-cli"
+  url "https://files.pythonhosted.org/packages/6c/1c/0cdd81ba615ef9d59fcfa99a057dd20afeb1008efc8a88d46cbb4d231215/keepassxc_cli-0.1.0.tar.gz"
+  sha256 "373f8ccd183cc1a9f820b0e789506e30afbbbfb2ae1764d00d38ad91d35a51cb"
   license "MIT"
 
   depends_on "libsodium"
-  depends_on :macos
   depends_on "python@3.13"
 
   resource "cffi" do
@@ -31,6 +30,11 @@ class KeepassxcSshAgent < Formula
     sha256 "018494d6d696ae03c7e656e5e74cdfd8ea1326962cc401bcf018f1ed8436811c"
   end
 
+  resource "pyperclip" do
+    url "https://files.pythonhosted.org/packages/e8/52/d87eba7cb129b81563019d1679026e7a112ef76855d6159d24754dbd2a51/pyperclip-1.11.0.tar.gz"
+    sha256 "244035963e4428530d9e3a6101a1ef97209c6825edab1567beac148ccc1db1b6"
+  end
+
   def install
     ENV["SODIUM_INSTALL"] = "system"
     virtualenv_install_with_resources
@@ -44,23 +48,16 @@ class KeepassxcSshAgent < Formula
     <<~EOS
       To associate with KeePassXC (browser integration must be enabled):
 
-        keepassxc-ssh-agent install --register-only
+        keepassxc-cli setup
 
-      Then start the background service:
+      Usage:
 
-        brew services start keepassxc-ssh-agent
+        keepassxc-cli --help
     EOS
   end
 
-  service do
-    run [opt_bin/"keepassxc-ssh-agent", "run"]
-    keep_alive true
-    log_path var/"log/keepassxc-ssh-agent/out.log"
-    error_log_path var/"log/keepassxc-ssh-agent/err.log"
-  end
-
   test do
-    assert_match "keepassxc-ssh-agent", shell_output("#{bin}/keepassxc-ssh-agent --help")
-    assert_match "status", shell_output("#{bin}/keepassxc-ssh-agent --help")
+    assert_match "keepassxc-cli", shell_output("#{bin}/keepassxc-cli --help")
+    assert_match "show", shell_output("#{bin}/keepassxc-cli --help")
   end
 end
