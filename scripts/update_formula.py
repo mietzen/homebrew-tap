@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
-"""Update the keepassxc-ssh-agent Homebrew formula with a new version.
+"""Update a Homebrew formula with a new PyPI package version.
 
 Resolves all transitive Python dependencies via the PyPI JSON API,
 fetches sdist URLs and sha256 hashes, and regenerates the formula
-from a Jinja template.
+from a Jinja template located at scripts/<package-name>/formula.rb.j2.
 
 Usage:
-    python3 scripts/keepassxc-ssh-agent/update_formula.py <version>
+    python3 scripts/update_formula.py <package-name> <version>
+
+Examples:
+    python3 scripts/update_formula.py keepassxc-ssh-agent 1.0.0
+    python3 scripts/update_formula.py keepassxc-cli 0.1.0
 """
 
 from __future__ import annotations
@@ -23,10 +27,7 @@ from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
 from packaging.version import Version
 
-FORMULA_PATH = Path("Formula/keepassxc-ssh-agent.rb")
-TEMPLATE_DIR = Path(__file__).parent
-TEMPLATE_NAME = "formula.rb.j2"
-PACKAGE_NAME = "keepassxc-ssh-agent"
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 @dataclass
@@ -118,20 +119,28 @@ def resolve_dependencies(
 
 
 def main() -> None:
-    if len(sys.argv) != 2:
-        print(f"Usage: {sys.argv[0]} <version>", file=sys.stderr)
+    if len(sys.argv) != 3:
+        print(f"Usage: {sys.argv[0]} <package-name> <version>", file=sys.stderr)
         sys.exit(1)
 
-    version = sys.argv[1]
+    package_name = sys.argv[1]
+    version = sys.argv[2]
+
+    template_dir = REPO_ROOT / "scripts" / package_name
+    formula_path = REPO_ROOT / "Formula" / f"{package_name}.rb"
+
+    if not template_dir.exists():
+        print(f"Error: template directory not found: {template_dir}", file=sys.stderr)
+        sys.exit(1)
 
     # Resolve dependency tree via PyPI API
-    print(f"Resolving dependencies for {PACKAGE_NAME}=={version}...")
-    deps = resolve_dependencies(PACKAGE_NAME, version)
+    print(f"Resolving dependencies for {package_name}=={version}...")
+    deps = resolve_dependencies(package_name, version)
     print(f"Resolved {len(deps)} dependencies: {deps}")
 
     # Fetch sdist info for main package and all dependencies
-    print(f"\nFetching sdist for {PACKAGE_NAME}=={version}...")
-    main_sdist = get_sdist(PACKAGE_NAME, version)
+    print(f"\nFetching sdist for {package_name}=={version}...")
+    main_sdist = get_sdist(package_name, version)
 
     resources = []
     for dep_name, dep_version in sorted(deps.items()):
@@ -140,18 +149,18 @@ def main() -> None:
 
     # Render formula from Jinja template
     env = Environment(
-        loader=FileSystemLoader(TEMPLATE_DIR),
+        loader=FileSystemLoader(template_dir),
         keep_trailing_newline=True,
     )
-    template = env.get_template(TEMPLATE_NAME)
+    template = env.get_template("formula.rb.j2")
     formula = template.render(
         url=main_sdist.url,
         sha256=main_sdist.sha256,
         resources=resources,
     )
 
-    FORMULA_PATH.write_text(formula)
-    print(f"\nFormula updated to version {version}")
+    formula_path.write_text(formula)
+    print(f"\nFormula updated: {formula_path} -> {version}")
 
 
 if __name__ == "__main__":
