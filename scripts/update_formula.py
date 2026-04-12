@@ -126,7 +126,7 @@ def main() -> None:
     package_name = sys.argv[1]
     version = sys.argv[2]
 
-    template_dir = REPO_ROOT / "scripts" / package_name
+    template_dir = REPO_ROOT / "formula-templates" / package_name
     formula_path = REPO_ROOT / "Formula" / f"{package_name}.rb"
 
     if not template_dir.exists():
