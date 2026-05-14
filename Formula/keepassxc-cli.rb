@@ -3,8 +3,8 @@ class KeepassxcCli < Formula
 
   desc "CLI for KeePassXC using the browser extension protocol with biometric unlock"
   homepage "https://github.com/mietzen/keepassxc-cli"
-  url "https://files.pythonhosted.org/packages/05/ef/780af4d5bbf06638ceffae66454984a4fc8ef185e228e01c06daaf1b0e07/keepassxc_cli-1.1.0.tar.gz"
-  sha256 "913f2a58af4c2abe1bbc5d0e745c5b223908254f468702d652f10b42898e3bd8"
+  url "https://files.pythonhosted.org/packages/61/8a/18e2dfd53581de8f42203f35e62536ed34fa4f3317aa02722a0555d70d2e/keepassxc_cli-1.2.0.tar.gz"
+  sha256 "afe33361f81a5db04120a184c9f8390d59ca81117b8b2016497b560f6356d24f"
   license "MIT"
 
   depends_on "libsodium"
@@ -17,8 +17,8 @@ class KeepassxcCli < Formula
   end
 
   resource "keepassxc-browser-api" do
-    url "https://files.pythonhosted.org/packages/6a/0f/7140a8f5c0eca859896ae50bcbf9074bbd25a58e9da4c7b9724e5f6a6281/keepassxc_browser_api-1.0.0.tar.gz"
-    sha256 "9d48611a6f6c83b951c1f2e7654070cee51eab33ed5625fe285ff280ccfefb4b"
+    url "https://files.pythonhosted.org/packages/82/1a/4222546552021076328377e615c81dda3e7eba4f9e0ce17f39bc62dc2e90/keepassxc_browser_api-1.1.0.tar.gz"
+    sha256 "08dd26fb569388ad0f34296a22a31e79e704a200817be01e66627b807e0aa9b9"
   end
 
   resource "pycparser" do
