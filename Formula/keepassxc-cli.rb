@@ -3,8 +3,8 @@ class KeepassxcCli < Formula
 
   desc "CLI for KeePassXC using the browser extension protocol with biometric unlock"
   homepage "https://github.com/mietzen/keepassxc-cli"
-  url "https://files.pythonhosted.org/packages/11/8e/4e26f9373cd36bdc4ca16f0924023e7703ce84f0d7f575bef492ff3f990d/keepassxc_cli-1.5.0.tar.gz"
-  sha256 "2c801ee2aac73384b0bcbe7daf872895b5eb5fea9a8226c467acbac6b53d7449"
+  url "https://files.pythonhosted.org/packages/d1/d1/b5049e4bcf5f17b8d20808734c4107b1b947b620ddaccb77eae3efbfa6c5/keepassxc_cli-1.6.0.tar.gz"
+  sha256 "135c649359c4e7c15696473bdc1298e1e76647df529434040b41f237c60a9de2"
   license "MIT"
 
   depends_on "libsodium"
