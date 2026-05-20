@@ -49,16 +49,16 @@ class KeepassxcCli < Formula
     <<~EOS
       To associate with KeePassXC (browser integration must be enabled):
 
-        keepassxc-cli setup
+        kpxc-cli setup
 
       Usage:
 
-        keepassxc-cli --help
+        kpxc-cli --help
     EOS
   end
 
   test do
-    assert_match "keepassxc-cli", shell_output("#{bin}/keepassxc-cli --help")
-    assert_match "show", shell_output("#{bin}/keepassxc-cli --help")
+    assert_match "kpxc-cli", shell_output("#{bin}/kpxc-cli --help")
+    assert_match "show", shell_output("#{bin}/kpxc-cli --help")
   end
 end
